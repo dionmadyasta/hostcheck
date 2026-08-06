@@ -999,6 +999,115 @@ main {
   color: var(--red);
 }
 
+/* ─── Site Preview Card ──────────────────────────────────────────── */
+.card-preview-card {
+  margin-bottom: 1rem;
+}
+
+.preview-body {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.preview-skeleton {
+  margin: 0;
+  border-radius: 0;
+}
+
+.preview-browser {
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid var(--border);
+}
+
+.preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-dots {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.preview-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.dot-red    { background: #EF4444; }
+.dot-amber  { background: #F59E0B; }
+.dot-green  { background: #22C55E; }
+
+.preview-url {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-img-wrap {
+  position: relative;
+  overflow: hidden;
+  max-height: 400px;
+  background: #0d1117;
+}
+
+.preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: opacity 0.4s ease;
+}
+
+.preview-img.loading { opacity: 0; }
+.preview-img.loaded  { opacity: 1; }
+
+.preview-fail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  gap: 0.5rem;
+}
+
+.preview-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(56,189,248,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: auto;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.preview-open-btn:hover {
+  background: rgba(56,189,248,0.08);
+  border-color: rgba(56,189,248,0.5);
+}
+
+.preview-open-btn.hidden { display: none; }
+
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .results-grid, .ip-grid {

@@ -62,8 +62,25 @@
         </form>
       </div>
 
-      <!-- Results Grid -->
-      <div id="domain-results" class="results-grid hidden">
+      <!-- Results Wrapper -->
+      <div id="domain-results-wrapper" class="hidden">
+
+        <!-- Site Preview — full width, paling atas -->
+        <div id="card-preview" class="card card-preview-card">
+          <div class="card-header">
+            <span class="card-icon">🖼️</span>
+            <h2 class="card-title">Site Preview</h2>
+            <a id="preview-link" href="#" target="_blank" rel="noopener" class="preview-open-btn hidden">
+              Open site ↗
+            </a>
+          </div>
+          <div id="preview-body" class="preview-body">
+            <div class="preview-skeleton skeleton-block" style="height:220px"></div>
+          </div>
+        </div>
+
+        <!-- 2-column results grid -->
+        <div id="domain-results" class="results-grid">
 
         <!-- Row 1 -->
         <div id="card-dns" class="card">
@@ -146,7 +163,8 @@
           </div>
         </div>
 
-      </div><!-- /domain-results -->
+      </div><!-- /domain-results grid -->
+      </div><!-- /domain-results-wrapper -->
     </section>
 
     <!-- ── IP LOOKUP TAB ── -->

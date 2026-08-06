@@ -13,11 +13,11 @@ GLOBALPING_API = "https://api.globalping.io/v1/measurements"
 
 # 5 representative global regions
 PROBE_LOCATIONS = [
-    {"continent": "NA", "limit": 1},
-    {"continent": "EU", "limit": 1},
-    {"continent": "AS", "limit": 1},
-    {"continent": "OC", "limit": 1},
-    {"continent": "SA", "limit": 1},
+    {"continent": "NA"},
+    {"continent": "EU"},
+    {"continent": "AS"},
+    {"continent": "OC"},
+    {"continent": "SA"},
 ]
 
 CONTINENT_NAMES = {
@@ -62,8 +62,7 @@ def check_geo(domain):
                 "request": {
                     "method": "HEAD",
                     "path": "/"
-                },
-                "ipVersion": 4
+                }
             }
         }
 

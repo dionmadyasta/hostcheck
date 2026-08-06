@@ -128,6 +128,18 @@ Done. All `api/*.py` functions deploy automatically as serverless endpoints.
 
 ---
 
+## Note on Performance
+
+This project is deployed on **Vercel serverless** purely as a portfolio showcase. Serverless has some known limitations for this kind of tool:
+
+- **Cold starts** — first request after idle can be slow
+- **10s timeout** on hobby plan (geo check may return partial results)
+- **No persistent connections** — each request spins up fresh
+
+In a real production environment, I'd run this on a **VPS** (always-on Python process, no cold starts, full ICMP support for real ping & traceroute, SQLite for persistent history). This version is just here so the work is visible and accessible. 😄
+
+---
+
 ## License
 
 MIT

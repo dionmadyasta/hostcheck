@@ -36,7 +36,7 @@ const dom = {
   domainInput:    $('domain-input'),
   domainBtn:      $('domain-btn'),
   domainError:    $('domain-error'),
-  domainResults:  $('domain-results'),
+  domainResults:  $('domain-results-wrapper'),
   ipForm:         $('ip-form'),
   ipInput:        $('ip-input'),
   ipBtn:          $('ip-btn'),
@@ -244,6 +244,9 @@ function runDomainAnalysis(domain) {
   // Show results grid with skeletons
   dom.domainResults.classList.remove('hidden');
   ['dns-body','health-body','propagation-body','email-body','wordpress-body','ping-body','geo-body'].forEach(skeleton);
+  // Reset preview
+  $('preview-body').innerHTML = '<div class="preview-skeleton skeleton-block" style="height:220px"></div>';
+  $('preview-link').className = 'preview-open-btn hidden';
   $('health-grade').className = 'grade-badge hidden';
   $('dns-status').textContent = '';
   $('prop-pct').textContent   = '';
@@ -262,11 +265,12 @@ function runDomainAnalysis(domain) {
   };
 
   let finished = 0;
-  const total  = 7;
+  const total  = 8;
   const tick   = () => { if (++finished >= total) done(); };
 
-  // Fire all in parallel
+  // Fire all in parallel — screenshot first (fast), DNS/etc progressive
   Promise.allSettled([
+    apiFetch('screenshot',  { domain }).then(d  => { renderPreview(d);      tick(); }).catch(e => { renderError('preview-body', e.message);      tick(); }),
     apiFetch('dns',         { domain }).then(d  => { renderDNS(d);         tick(); }).catch(e => { renderError('dns-body', e.message);         tick(); }),
     apiFetch('health',      { domain }).then(d  => { renderHealth(d);      tick(); }).catch(e => { renderError('health-body', e.message);      tick(); }),
     apiFetch('propagation', { domain }).then(d  => { renderPropagation(d); tick(); }).catch(e => { renderError('propagation-body', e.message); tick(); }),
@@ -289,6 +293,56 @@ function buildDomainMeta() {
   const wp = $('wp-status');
   if (wp && wp.textContent) parts.push(wp.textContent);
   return parts.join(' · ') || 'Domain check complete';
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Render: Site Preview
+// ──────────────────────────────────────────────────────────────────
+function renderPreview(data) {
+  const el = $('preview-body');
+  if (!el) return;
+
+  const url      = data.url || `https://${data.domain}`;
+  const imgUrl   = data.screenshot_url;
+  const linkEl   = $('preview-link');
+
+  if (linkEl) {
+    linkEl.href      = url;
+    linkEl.className = 'preview-open-btn';
+  }
+
+  const html = `
+    <div class="preview-browser">
+      <div class="preview-bar">
+        <div class="preview-dots">
+          <span class="preview-dot dot-red"></span>
+          <span class="preview-dot dot-amber"></span>
+          <span class="preview-dot dot-green"></span>
+        </div>
+        <div class="preview-url">${esc(url)}</div>
+      </div>
+      <div class="preview-img-wrap">
+        <img
+          id="preview-img"
+          class="preview-img loading"
+          src="${esc(imgUrl)}"
+          alt="Screenshot of ${esc(data.domain)}"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  `;
+
+  el.innerHTML = html;
+
+  // Fade in once image loads
+  const img = $('preview-img');
+  if (img) {
+    img.onload  = () => img.classList.replace('loading', 'loaded');
+    img.onerror = () => {
+      el.innerHTML = `<div class="preview-fail">🚫 Preview not available for this domain</div>`;
+    };
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────
