@@ -5,12 +5,16 @@ import urllib.parse
 
 def get_screenshot(domain):
     url = f"https://{domain}"
+    encoded_url = urllib.parse.quote(url, safe="")
+    
+    # WordPress mshots — 100% free, no API key, unlimited (by Automattic)
+    screenshot_url = f"https://s0.wp.com/mshots/v1/{encoded_url}?w=960&h=540"
+    
     return {
         "domain": domain,
         "url": url,
-        # thum.io — free, no API key, instant thumbnail service
-        "screenshot_url": f"https://image.thum.io/get/width/1200/crop/630/noanimate/{url}",
-        "provider": "thum.io"
+        "screenshot_url": screenshot_url,
+        "provider": "WordPress mshots"
     }
 
 
