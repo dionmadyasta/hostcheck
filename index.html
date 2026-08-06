@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HostCheck — Domain & IP Diagnostic Tool</title>
+  <meta name="description" content="Professional hosting diagnostic tool. Full DNS check, propagation, WordPress detection, email health, IP reputation, and geo accessibility — all in one place." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════ STICKY HEADER ══════════════════ -->
+  <header id="main-header">
+    <div class="header-inner">
+      <a href="/" class="logo" aria-label="HostCheck Home">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">HostCheck</span>
+      </a>
+
+      <nav class="tab-nav" role="tablist" aria-label="Tool mode">
+        <button id="tab-btn-domain" class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-domain" data-tab="domain">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Domain Analyzer
+        </button>
+        <button id="tab-btn-ip" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-ip" data-tab="ip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          IP Lookup
+        </button>
+      </nav>
+
+      <button id="history-toggle" class="icon-btn" aria-label="Toggle search history" title="Search History">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>History</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+  <main>
+
+    <!-- ── DOMAIN ANALYZER TAB ── -->
+    <section id="panel-domain" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-domain">
+      <div class="hero">
+        <h1 class="hero-title">Domain Diagnostic</h1>
+        <p class="hero-sub">DNS · Propagation · Health · WordPress · Email · Geo</p>
+
+        <form id="domain-form" class="search-form" autocomplete="off">
+          <div class="search-bar">
+            <span class="search-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            <input id="domain-input" type="text" placeholder="example.com" spellcheck="false" autocorrect="off" autocapitalize="none" />
+            <button type="submit" class="btn-primary" id="domain-btn">
+              <span class="btn-text">Analyze</span>
+              <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          <p id="domain-error" class="input-error" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <!-- Results Grid -->
+      <div id="domain-results" class="results-grid hidden">
+
+        <!-- Row 1 -->
+        <div id="card-dns" class="card">
+          <div class="card-header">
+            <span class="card-icon">📋</span>
+            <h2 class="card-title">DNS Records</h2>
+            <span id="dns-status" class="card-status"></span>
+          </div>
+          <div id="dns-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div id="card-health" class="card">
+          <div class="card-header">
+            <span class="card-icon">🏥</span>
+            <h2 class="card-title">DNS Health</h2>
+            <span id="health-grade" class="grade-badge hidden"></span>
+          </div>
+          <div id="health-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div id="card-propagation" class="card">
+          <div class="card-header">
+            <span class="card-icon">🌍</span>
+            <h2 class="card-title">Propagation</h2>
+            <span id="prop-pct" class="card-status"></span>
+          </div>
+          <div id="propagation-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div id="card-email" class="card">
+          <div class="card-header">
+            <span class="card-icon">📧</span>
+            <h2 class="card-title">Email Server</h2>
+            <span id="email-status" class="card-status"></span>
+          </div>
+          <div id="email-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div id="card-wordpress" class="card">
+          <div class="card-header">
+            <span class="card-icon">🔷</span>
+            <h2 class="card-title">CMS Detection</h2>
+            <span id="wp-status" class="card-status"></span>
+          </div>
+          <div id="wordpress-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div id="card-ping" class="card">
+          <div class="card-header">
+            <span class="card-icon">🏓</span>
+            <h2 class="card-title">HTTP Ping</h2>
+            <span id="ping-status" class="card-status"></span>
+          </div>
+          <div id="ping-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <!-- Row 4 — full width -->
+        <div id="card-geo" class="card card-full">
+          <div class="card-header">
+            <span class="card-icon">🌐</span>
+            <h2 class="card-title">Geo Accessibility</h2>
+            <span id="geo-status" class="card-status muted">checking 5 regions…</span>
+          </div>
+          <div id="geo-body" class="card-body">
+            <div class="skeleton-block" style="height:64px"></div>
+          </div>
+        </div>
+
+      </div><!-- /domain-results -->
+    </section>
+
+    <!-- ── IP LOOKUP TAB ── -->
+    <section id="panel-ip" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-ip">
+      <div class="hero">
+        <h1 class="hero-title">IP Reputation Lookup</h1>
+        <p class="hero-sub">Geolocation · AbuseIPDB Score · Abuse Reports</p>
+
+        <form id="ip-form" class="search-form" autocomplete="off">
+          <div class="search-bar">
+            <span class="search-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input id="ip-input" type="text" placeholder="103.12.45.67" spellcheck="false" autocorrect="off" />
+            <button type="submit" class="btn-primary" id="ip-btn">
+              <span class="btn-text">Lookup</span>
+              <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          <p id="ip-error" class="input-error" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <!-- IP Results -->
+      <div id="ip-results" class="results-grid ip-grid hidden">
+
+        <div id="card-ip-geo" class="card">
+          <div class="card-header">
+            <span class="card-icon">📍</span>
+            <h2 class="card-title">Geolocation</h2>
+          </div>
+          <div id="ip-geo-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div id="card-ip-abuse" class="card">
+          <div class="card-header">
+            <span class="card-icon">⚠️</span>
+            <h2 class="card-title">Abuse Score</h2>
+          </div>
+          <div id="ip-abuse-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div id="card-ip-reports" class="card card-full">
+          <div class="card-header">
+            <span class="card-icon">📝</span>
+            <h2 class="card-title">Abuse Reports</h2>
+            <span id="reports-count" class="card-status"></span>
+          </div>
+          <div id="ip-reports-body" class="card-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+      </div><!-- /ip-results -->
+    </section>
+
+  </main>
+
+  <!-- ══════════════════ HISTORY DRAWER ══════════════════ -->
+  <div id="history-overlay" class="overlay" role="presentation"></div>
+  <aside id="history-drawer" class="drawer" aria-label="Search history">
+    <div class="drawer-header">
+      <span class="drawer-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+      </span>
+      <button id="history-close" class="icon-btn-sm" aria-label="Close history">✕</button>
+    </div>
+    <div id="history-list" class="drawer-list">
+      <p class="empty-state">No searches yet.</p>
+    </div>
+    <div class="drawer-footer">
+      <button id="history-clear" class="btn-ghost btn-sm">Clear all</button>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>
