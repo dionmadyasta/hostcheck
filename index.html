@@ -65,17 +65,15 @@
       <!-- Results Wrapper -->
       <div id="domain-results-wrapper" class="hidden">
 
-        <!-- Site Preview — full width, paling atas -->
-        <div id="card-preview" class="card card-preview-card">
+        <!-- SSL Certificate Inspector — full width, paling atas -->
+        <div id="card-ssl" class="card card-ssl-card">
           <div class="card-header">
-            <span class="card-icon">🖼️</span>
-            <h2 class="card-title">Site Preview</h2>
-            <a id="preview-link" href="#" target="_blank" rel="noopener" class="preview-open-btn hidden">
-              Open site ↗
-            </a>
+            <span class="card-icon">🔒</span>
+            <h2 class="card-title">SSL Certificate Inspector</h2>
+            <span id="ssl-status-badge" class="card-status"></span>
           </div>
-          <div id="preview-body" class="preview-body">
-            <div class="preview-skeleton skeleton-block" style="height:220px"></div>
+          <div id="ssl-body" class="card-body">
+            <div class="skeleton-block" style="height:100px"></div>
           </div>
         </div>
 
@@ -159,6 +157,18 @@
             <span id="geo-status" class="card-status muted">checking 5 regions…</span>
           </div>
           <div id="geo-body" class="card-body">
+            <div class="skeleton-block" style="height:64px"></div>
+          </div>
+        </div>
+
+        <!-- Row 5 — Subdomains (full width) -->
+        <div id="card-subdomains" class="card card-full">
+          <div class="card-header">
+            <span class="card-icon">🔍</span>
+            <h2 class="card-title">Subdomains Found</h2>
+            <span id="subdomains-count" class="card-status"></span>
+          </div>
+          <div id="subdomains-body" class="card-body">
             <div class="skeleton-block" style="height:64px"></div>
           </div>
         </div>

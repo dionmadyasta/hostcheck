@@ -30,7 +30,8 @@ from api.email        import check_email
 from api.ip           import check_ip
 from api.ping         import http_ping
 from api.geo          import check_geo
-from api.screenshot   import get_screenshot
+from api.ssl_check    import inspect_ssl
+from api.subdomains   import find_subdomains
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,7 +51,8 @@ ROUTES = {
     '/api/ping':        lambda p: http_ping(clean(p, 'domain')),
     '/api/geo':         lambda p: check_geo(clean(p, 'domain')),
     '/api/ip':          lambda p: check_ip(p.get('ip', [''])[0].strip()),
-    '/api/screenshot':  lambda p: get_screenshot(clean(p, 'domain')),
+    '/api/ssl_check':   lambda p: inspect_ssl(clean(p, 'domain')),
+    '/api/subdomains':  lambda p: find_subdomains(clean(p, 'domain')),
 }
 
 

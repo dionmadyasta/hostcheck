@@ -19,6 +19,8 @@ HostCheck consolidates all of that into one place. One domain input, one click, 
 ### 🌐 Domain Analyzer
 | Feature | Details |
 |---|---|
+| **SSL Inspector** | Certificate validity, issuer, days left, valid dates, SANs |
+| **Subdomain Discovery**| Finds subdomains + resolved IPs via HackerTarget & DNS probe |
 | **DNS Full Check** | A, AAAA, MX, TXT, NS, SOA, CAA, PTR — with TTL |
 | **DNS Health Score** | 9-point scoring system with letter grade (A–F) |
 | **DNS Propagation** | Checks 11 global resolvers including Telkom & Nawala ID |
@@ -53,6 +55,8 @@ HostCheck consolidates all of that into one place. One domain input, one click, 
 ```
 hostcheck/
 ├── api/
+│   ├── ssl_check.py     # SSL certificate inspector
+│   ├── subdomains.py    # Subdomain discovery
 │   ├── dns.py           # DNS records
 │   ├── propagation.py   # Global propagation check
 │   ├── health.py        # DNS health scoring
@@ -64,6 +68,7 @@ hostcheck/
 ├── index.html
 ├── style.css
 ├── app.js
+├── dev.py               # Pure Python local dev server
 ├── vercel.json
 └── requirements.txt
 ```

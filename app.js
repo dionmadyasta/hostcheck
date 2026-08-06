@@ -243,10 +243,9 @@ dom.domainForm.addEventListener('submit', e => {
 function runDomainAnalysis(domain) {
   // Show results grid with skeletons
   dom.domainResults.classList.remove('hidden');
-  ['dns-body','health-body','propagation-body','email-body','wordpress-body','ping-body','geo-body'].forEach(skeleton);
-  // Reset preview
-  $('preview-body').innerHTML = '<div class="preview-skeleton skeleton-block" style="height:220px"></div>';
-  $('preview-link').className = 'preview-open-btn hidden';
+  ['ssl-body','dns-body','health-body','propagation-body','email-body','wordpress-body','ping-body','geo-body','subdomains-body'].forEach(skeleton);
+  $('ssl-status-badge').textContent = '';
+  $('subdomains-count').textContent = '';
   $('health-grade').className = 'grade-badge hidden';
   $('dns-status').textContent = '';
   $('prop-pct').textContent   = '';
@@ -265,19 +264,20 @@ function runDomainAnalysis(domain) {
   };
 
   let finished = 0;
-  const total  = 8;
+  const total  = 9;
   const tick   = () => { if (++finished >= total) done(); };
 
-  // Fire all in parallel — screenshot first (fast), DNS/etc progressive
+  // Fire all 9 workers in parallel
   Promise.allSettled([
-    apiFetch('screenshot',  { domain }).then(d  => { renderPreview(d);      tick(); }).catch(e => { renderError('preview-body', e.message);      tick(); }),
-    apiFetch('dns',         { domain }).then(d  => { renderDNS(d);         tick(); }).catch(e => { renderError('dns-body', e.message);         tick(); }),
-    apiFetch('health',      { domain }).then(d  => { renderHealth(d);      tick(); }).catch(e => { renderError('health-body', e.message);      tick(); }),
-    apiFetch('propagation', { domain }).then(d  => { renderPropagation(d); tick(); }).catch(e => { renderError('propagation-body', e.message); tick(); }),
-    apiFetch('email',       { domain }).then(d  => { renderEmail(d);       tick(); }).catch(e => { renderError('email-body', e.message);       tick(); }),
-    apiFetch('wordpress',   { domain }).then(d  => { renderWordPress(d);   tick(); }).catch(e => { renderError('wordpress-body', e.message);   tick(); }),
-    apiFetch('ping',        { domain }).then(d  => { renderPing(d);        tick(); }).catch(e => { renderError('ping-body', e.message);        tick(); }),
-    apiFetch('geo',         { domain }).then(d  => { renderGeo(d);         tick(); }).catch(e => { renderError('geo-body', e.message);         tick(); }),
+    apiFetch('ssl_check',   { domain }).then(d  => { renderSSL(d);          tick(); }).catch(e => { renderError('ssl-body', e.message);          tick(); }),
+    apiFetch('dns',         { domain }).then(d  => { renderDNS(d);          tick(); }).catch(e => { renderError('dns-body', e.message);         tick(); }),
+    apiFetch('health',      { domain }).then(d  => { renderHealth(d);       tick(); }).catch(e => { renderError('health-body', e.message);      tick(); }),
+    apiFetch('propagation', { domain }).then(d  => { renderPropagation(d);  tick(); }).catch(e => { renderError('propagation-body', e.message); tick(); }),
+    apiFetch('email',       { domain }).then(d  => { renderEmail(d);        tick(); }).catch(e => { renderError('email-body', e.message);       tick(); }),
+    apiFetch('wordpress',   { domain }).then(d  => { renderWordPress(d);    tick(); }).catch(e => { renderError('wordpress-body', e.message);   tick(); }),
+    apiFetch('ping',        { domain }).then(d  => { renderPing(d);         tick(); }).catch(e => { renderError('ping-body', e.message);        tick(); }),
+    apiFetch('geo',         { domain }).then(d  => { renderGeo(d);          tick(); }).catch(e => { renderError('geo-body', e.message);         tick(); }),
+    apiFetch('subdomains',  { domain }).then(d  => { renderSubdomains(d);   tick(); }).catch(e => { renderError('subdomains-body', e.message);  tick(); }),
   ]).then(() => {
     addHistoryEntry('domain', domain, buildDomainMeta());
   });
@@ -296,53 +296,112 @@ function buildDomainMeta() {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// Render: Site Preview
+// Render: SSL Certificate Inspector
 // ──────────────────────────────────────────────────────────────────
-function renderPreview(data) {
-  const el = $('preview-body');
+function renderSSL(data) {
+  const el = $('ssl-body');
   if (!el) return;
 
-  const url      = data.url || `https://${data.domain}`;
-  const imgUrl   = data.screenshot_url;
-  const linkEl   = $('preview-link');
-
-  if (linkEl) {
-    linkEl.href      = url;
-    linkEl.className = 'preview-open-btn';
+  if (data.error && !data.days_remaining) {
+    renderError('ssl-body', data.error);
+    $('ssl-status-badge').innerHTML = '<span class="badge badge-red">SSL Error / No HTTPS</span>';
+    return;
   }
 
-  const html = `
-    <div class="preview-browser">
-      <div class="preview-bar">
-        <div class="preview-dots">
-          <span class="preview-dot dot-red"></span>
-          <span class="preview-dot dot-amber"></span>
-          <span class="preview-dot dot-green"></span>
-        </div>
-        <div class="preview-url">${esc(url)}</div>
+  const days  = data.days_remaining;
+  const status = data.status; // valid, expiring_soon, expired
+  const issuer = data.issuer || {};
+  const issuerName = issuer.O || issuer.CN || 'Unknown Issuer';
+
+  let badgeHtml = '<span class="badge badge-green">Valid SSL ✅</span>';
+  let color = 'var(--green)';
+
+  if (status === 'expiring_soon') {
+    badgeHtml = '<span class="badge badge-amber">Expiring Soon ⚠️</span>';
+    color = 'var(--amber)';
+  } else if (status === 'expired') {
+    badgeHtml = '<span class="badge badge-red">Expired ❌</span>';
+    color = 'var(--red)';
+  }
+
+  $('ssl-status-badge').innerHTML = badgeHtml;
+
+  const validFromStr = data.valid_from ? new Date(data.valid_from).toLocaleDateString() : '—';
+  const validToStr   = data.valid_to ? new Date(data.valid_to).toLocaleDateString() : '—';
+
+  let html = `
+    <div class="ssl-grid">
+      <div class="ssl-days-hero">
+        <span class="ssl-days-num" style="color:${color}">${days !== null ? days : '0'}</span>
+        <span class="ssl-days-label">Days Left</span>
       </div>
-      <div class="preview-img-wrap">
-        <img
-          id="preview-img"
-          class="preview-img loading"
-          src="${esc(imgUrl)}"
-          alt="Screenshot of ${esc(data.domain)}"
-          loading="lazy"
-        />
+      <div class="ssl-info-grid">
+        <div class="ssl-info-item">
+          <span class="ssl-info-label">Issuer</span>
+          <span class="ssl-info-val" title="${esc(issuerName)}">${esc(issuerName)}</span>
+        </div>
+        <div class="ssl-info-item">
+          <span class="ssl-info-label">Valid Until</span>
+          <span class="ssl-info-val">${esc(validToStr)}</span>
+        </div>
+        <div class="ssl-info-item">
+          <span class="ssl-info-label">Valid From</span>
+          <span class="ssl-info-val">${esc(validFromStr)}</span>
+        </div>
+        <div class="ssl-info-item">
+          <span class="ssl-info-label">Protocol / Cipher</span>
+          <span class="ssl-info-val" title="${esc(data.version || '')} (${esc(data.cipher || '')})">${esc(data.version || 'TLS')}</span>
+        </div>
       </div>
     </div>
   `;
 
-  el.innerHTML = html;
-
-  // Fade in once image loads
-  const img = $('preview-img');
-  if (img) {
-    img.onload  = () => img.classList.replace('loading', 'loaded');
-    img.onerror = () => {
-      el.innerHTML = `<div class="preview-fail">🚫 Preview not available for this domain</div>`;
-    };
+  if (data.sans && data.sans.length) {
+    const sansStr = data.sans.slice(0, 8).join(', ') + (data.sans.length > 8 ? ` +${data.sans.length - 8} more` : '');
+    html += `<div style="margin-top:0.6rem;font-size:0.72rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(data.sans.join(', '))}">
+      <strong style="color:var(--fg)">SANs:</strong> ${esc(sansStr)}
+    </div>`;
   }
+
+  el.innerHTML = html;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Render: Subdomains Found
+// ──────────────────────────────────────────────────────────────────
+function renderSubdomains(data) {
+  const el = $('subdomains-body');
+  if (!el) return;
+
+  if (data.error) {
+    renderError('subdomains-body', data.error);
+    $('subdomains-count').textContent = '';
+    return;
+  }
+
+  const subs = data.subdomains || [];
+  $('subdomains-count').textContent = subs.length ? `${subs.length} found` : '0 found';
+
+  if (!subs.length) {
+    el.innerHTML = '<p class="dns-empty">No common subdomains found for this domain.</p>';
+    return;
+  }
+
+  let html = '<div class="subdomain-chips">';
+
+  for (const s of subs) {
+    const dot = s.has_ip ? '🟢' : '⚪';
+    html += `
+      <div class="subdomain-chip" title="IP: ${esc(s.ip)}">
+        <span>${dot}</span>
+        <span class="subdomain-name">${esc(s.subdomain)}</span>
+        <span class="subdomain-ip">${esc(s.ip)}</span>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 // ──────────────────────────────────────────────────────────────────
