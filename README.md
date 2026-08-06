@@ -145,6 +145,22 @@ In a real production environment, I'd run this on a **VPS** (always-on Python pr
 
 ---
 
+## Screenshots & Preview
+
+<p align="center">
+  <img src="img/1.png" alt="HostCheck Domain Analyzer & SSL Inspector" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/2.png" alt="HostCheck DNS Records & Propagation" width="100%" />
+</p>
+
+<p align="center">
+  <img src="img/3.png" alt="HostCheck IP Reputation Lookup" width="100%" />
+</p>
+
+---
+
 ## License
 
 MIT
